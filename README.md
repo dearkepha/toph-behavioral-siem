@@ -34,19 +34,19 @@ The project's name, "Toph", is inspired by Avatar's fictional character "Toph Be
 ### Execution
 
 1. **Clone the Repository:**
-   ```bash
+```bash
    git clone https://github.com/dearkepha/toph-behavioral-siem.git
    cd toph-behavioral-siem
 ```
 
 2. **Generate the Network Telemetry Dataset:**
-   ```bash
+```bash
    python logGenerator.py
 ```
 This executes the simulation script, generating a realistic log.json file populated with typical corporate user baseline events alongside anomalous traffic spikes and attack bursts.
 
 3. **Run the Stateful Analyzer:**
-   ```bash
+```bash
    python toph.py
 ```
 This initializes the detection engine, processing the generated logs and streaming real-time alerts to the console whenever an automated attack or policy violation is discovered.
