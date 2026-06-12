@@ -1,14 +1,28 @@
 import json
+from collections import Counter
+suspicious_ips = []
+cnt = Counter()
 
-with open("log.json", "r") as log:
-    for line in log:
-        log_entry = json.loads(log.readline()) #picks a line from the log script and translates it into a json string
-        ip = log_entry["ip_address"]
-        timestamp = log_entry["timestamp"]
-        username = log_entry["username"]
+def read_entry():
+    with open("log.json", "r") as log:
+        for line in log:
+            line.strip()
+            clear_entry = json.loads(line)
+            ip = clear_entry["ip_address"]
+            timestamp = clear_entry["timestamp"]
+            username = clear_entry["username"]
+            login = clear_entry["login"]
+        
+            if ip.startswith("192.168.1.") or ip.startswith("10.0."):
+                continue
+            suspicious_ips.append((ip, username, login))
 
-        time_part = timestamp.split()[3]
-        hour = int(time_part.split(":")[0])
+def burst_detector():
+    read_entry()
+    for ip, username, login in suspicious_ips:
+        cnt[ip] += 1
 
-        if (hour >= 23 or hour <= 4) and ip.startswith("45.221.8."):
-            print(f"Suspicious access from ip {ip}. Username {username} at time {timestamp}")
+    for ip in cnt:
+        print(f"ip {ip} tried to log in a total of {cnt[ip]} times under the username {username}. {login} login attempt. It got in after {cnt[ip]-1} tries")
+burst_detector()
+

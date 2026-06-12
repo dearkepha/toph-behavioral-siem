@@ -10,6 +10,7 @@ unusual_subnet = ipaddress.IPv4Network("45.221.8.0/24") #purposefully unusual, p
 HOURS = list(range(24))
 HOUR_WEIGHTS = [2, 2, 1, 1, 1, 2, 5, 10, 20, 30, 40, 50, 80, 85, 60, 40, 30, 25, 20, 15, 10, 5, 3, 2] #traffic weight. Heavy during the day, small late at night
 
+
 def generate_log_entry():
     generated_logs = []
 
@@ -28,6 +29,12 @@ def generate_log_entry():
     now = datetime.now()
     random_date = now.replace(hour=chosen_hour, minute=random.randint(0, 59), second=random.randint(0, 59)) #picks the current day, but randomizes the specific time to reflect accesses durint that day
     timestamp = time.ctime(random_date.timestamp()) #converts timestamp into ctime notation
+    
+    #Defining if the login attempt was successful or not
+    if chosen_net == unusual_subnet:
+        login_attempt = "Failed"
+    else:
+        login_attempt = "Successful"
 
     username = random.choice(names)
 
@@ -36,15 +43,27 @@ def generate_log_entry():
         probable_attack = True
 
     if probable_attack == True:
-        attack_chance = random.randint(1,100)
+        login_attempt = "Failed"
+        attack_chance = random.randint(1,100) 
+        breakin_chance = random.randint(1,100)
+
         if attack_chance >= 45: #there is a 65% chance that an unusual ip late at night tries to log in bursts, indicating attacks
             base_seconds = random_date.timestamp() #converts the current time to seconds and add 2 seconds every iteration. The goal is to simulate an attack coming in bursts
-            for i in range(random.randint(5,12)):
+
+            burst_lenght = random.randint(5,12)
+            for i in range(burst_lenght):
                 current_seconds = base_seconds + (i*2)
+                
+                if i == burst_lenght -1 and breakin_chance >= 50:
+                    login_attempt = "Successful"
+                else:
+                    login_attempt = "Failed"
+
                 suspicious_entries = {
                     "timestamp" : time.ctime(current_seconds),
                     "ip_address" : str(chosen_host),
-                    "username" : username
+                    "username" : username,
+                    "login" : login_attempt
                 }
                 generated_logs.append((current_seconds, json.dumps(suspicious_entries)))
 
@@ -54,7 +73,8 @@ def generate_log_entry():
     normal_entry = {
         "timestamp" : str(timestamp),
         "ip_address" : str(chosen_host),
-        "username" : username
+        "username" : username,
+        "login" : login_attempt
     }
     base_seconds = random_date.timestamp()
     generated_logs.append((base_seconds, json.dumps(normal_entry)))
